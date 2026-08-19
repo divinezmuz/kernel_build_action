@@ -23,8 +23,9 @@ export async function setupCcache(config: string): Promise<void> {
   await exec.exec('ccache', ['-M', '4G']);
 
   // Restore cache
-  const key = `ccache-${config}-${process.env.GITHUB_SHA || 'default'}`;
-  const restoreKeys = [`ccache-${config}-`];
+  const safeConfig = config.trim().replace(/\s+/g, '-');
+  const key = `ccache-${safeConfig}-${process.env.GITHUB_SHA || 'default'}`;
+  const restoreKeys = [`ccache-${safeConfig}-`];
 
   try {
     const cacheHit = await cache.restoreCache([CCACHE_DIR], key, restoreKeys);
@@ -46,7 +47,8 @@ export async function setupCcache(config: string): Promise<void> {
 export async function saveCcache(config: string): Promise<void> {
   core.startGroup('Saving ccache');
 
-  const key = `ccache-${config}-${process.env.GITHUB_SHA || 'default'}`;
+  const safeConfig = config.trim().replace(/\s+/g, '-');
+  const key = `ccache-${safeConfig}-${process.env.GITHUB_SHA || 'default'}`;
 
   try {
     await cache.saveCache([CCACHE_DIR], key);

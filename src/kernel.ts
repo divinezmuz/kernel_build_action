@@ -174,18 +174,23 @@ export function getKernelVersion(kernelDir: string): KernelVersion {
  * Get config file path
  */
 export function getConfigPath(kernelDir: string, arch: string, config: string): string {
-  if (arch.includes('..') || config.includes('..')) {
+  const firstConfig = config.trim().split(/\s+/)[0];
+  if (arch.includes('..') || firstConfig.includes('..')) {
     throw new Error('Invalid arch or config: path traversal detected');
   }
-  return path.join(kernelDir, 'arch', arch, 'configs', config);
+  return path.join(kernelDir, 'arch', arch, 'configs', firstConfig);
 }
 
 /**
  * Check if config file exists
  */
 export function configExists(kernelDir: string, arch: string, config: string): boolean {
-  const configPath = getConfigPath(kernelDir, arch, config);
-  return fs.existsSync(configPath);
+  const configs = config.trim().split(/\s+/);
+  return configs.every((c) => {
+    if (c.includes('..')) return false;
+    const configPath = path.join(kernelDir, 'arch', arch, 'configs', c);
+    return fs.existsSync(configPath);
+  });
 }
 
 /**

@@ -32,15 +32,18 @@ export async function uploadArtifacts(config: ArtifactConfig): Promise<void> {
 
   core.startGroup(`Uploading artifact: ${artifactName}`);
 
-  // Get all files in build directory
   const files: string[] = [];
-  for (const entry of entries) {
-    const fullPath = path.join(config.buildDir, entry);
-    const stat = fs.statSync(fullPath);
-    if (stat.isFile()) {
-      files.push(fullPath);
+  function getFiles(dir: string) {
+    for (const entry of fs.readdirSync(dir)) {
+      const fullPath = path.join(dir, entry);
+      if (fs.statSync(fullPath).isDirectory()) {
+        getFiles(fullPath);
+      } else {
+        files.push(fullPath);
+      }
     }
   }
+  getFiles(config.buildDir);
 
   if (files.length === 0) {
     throw new Error('No files to upload');

@@ -114,7 +114,7 @@ export async function buildKernel(config: BuildConfig): Promise<boolean> {
   // Build make arguments (matches bash script exactly)
   const makeArgs = [
     `-j${os.cpus().length}`,
-    config.config,
+    ...config.config.trim().split(/\s+/),
     `ARCH=${config.arch}`,
     'O=out',
     'all',

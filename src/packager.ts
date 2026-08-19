@@ -192,8 +192,7 @@ export async function packageAnyKernel3(config: PackageConfig): Promise<void> {
     core.info('DTB not found, skipping');
   }
 
-  // Remove unnecessary files
-  const filesToRemove = ['.git', '.gitattributes', '.gitignore', 'README.md'];
+  const filesToRemove = ['.git', '.github', '.gitattributes', '.gitignore', 'README.md', 'modules', 'patch', 'ramdisk'];
   for (const file of filesToRemove) {
     const filePath = path.join(anykernelDir, file);
     if (fs.existsSync(filePath)) {
@@ -205,25 +204,15 @@ export async function packageAnyKernel3(config: PackageConfig): Promise<void> {
     }
   }
 
-  // Create build directory and copy files
   fs.mkdirSync(config.buildDir, { recursive: true });
-
-  // Create zip if releasing, otherwise copy files
-  if (config.release) {
-    const zipPath = path.resolve(config.buildDir, 'AnyKernel3-flasher.zip');
-    await exec.exec('zip', ['-r', zipPath, '.'], { cwd: anykernelDir });
-    core.info(`Created: ${zipPath}`);
-  } else {
-    // Copy all files to build directory
-    const entries = fs.readdirSync(anykernelDir);
-    for (const entry of entries) {
-      const srcPath = path.join(anykernelDir, entry);
-      const destPath = path.join(config.buildDir, entry);
-      if (fs.statSync(srcPath).isDirectory()) {
-        fs.cpSync(srcPath, destPath, { recursive: true });
-      } else {
-        fs.copyFileSync(srcPath, destPath);
-      }
+  const entries = fs.readdirSync(anykernelDir);
+  for (const entry of entries) {
+    const srcPath = path.join(anykernelDir, entry);
+    const destPath = path.join(config.buildDir, entry);
+    if (fs.statSync(srcPath).isDirectory()) {
+      fs.cpSync(srcPath, destPath, { recursive: true });
+    } else {
+      fs.copyFileSync(srcPath, destPath);
     }
   }
 
