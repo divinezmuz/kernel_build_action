@@ -1,0 +1,38 @@
+name: Recompile Dist
+
+on:
+  push:
+    paths:
+      - 'src/**/*.ts'
+      - 'package.json'
+      - 'yarn.lock'
+      - 'tsconfig.json'
+    branches:
+      - multi-config
+
+permissions:
+  contents: write
+
+jobs:
+  recompile-dist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --force
+
+      - name: Build with esbuild
+        run: yarn build
+
+      - name: Commit dist changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "auto-recompile dist bundle"
+          file_pattern: "dist/*"
